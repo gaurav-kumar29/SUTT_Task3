@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:notes_app/models.dart' show Note, NoteState;
 import 'package:notes_app/icons.dart';
 import 'package:notes_app/models.dart';
 import 'package:notes_app/services.dart';
@@ -16,10 +17,12 @@ class NoteActions extends StatelessWidget {
     final id = note?.id;
     final uid = Provider.of<CurrentUser>(context)?.data?.uid;
 
+
     final textStyle = TextStyle(
       color: kHintTextColorLight,
       fontSize: 16,
     );
+
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -48,13 +51,18 @@ class NoteActions extends StatelessWidget {
         if (id != null && state != NoteState.deleted) ListTile(
           leading: const Icon(AppIcons.delete_outline),
           title: Text('Delete', style: textStyle),
-          onTap: () => Navigator.pop(context, NoteStateUpdateCommand(
+          onTap: () => delete(uid,id),
+          //Firestore.instance.collection(uid).document(id).delete(),
+              /*Navigator.pop(context, NoteStateUpdateCommand(
             id: id,
             uid: uid,
             from: state,
             to: NoteState.deleted,
             dismiss: true,
           )),
+
+               */
+
         ),
 
         if (state == NoteState.deleted) ListTile(
@@ -73,5 +81,13 @@ class NoteActions extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void delete(uid, id){
+    Firestore.instance.
+    collection('notes-$uid').
+    document(id).
+    delete().
+    catchError((onError){print(onError);});
   }
 }

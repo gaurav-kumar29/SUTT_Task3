@@ -18,7 +18,7 @@ class NotesApp extends StatelessWidget {
       builder: (context, user, _) => MaterialApp(
         title: 'Notes App',
         theme: Theme.of(context).copyWith(
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           primaryColor: Colors.white,
           accentColor: kAccentColorLight,
           appBarTheme: AppBarTheme.of(context).copyWith(
