@@ -1,13 +1,18 @@
 import 'dart:ui';
+import 'dart:async';
+
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 
 import 'package:notes_app/services.dart' show NoteQuery;
+import 'package:flutter/widgets.dart';
 
 
-class Note extends ChangeNotifier {
+class Note extends ChangeNotifier  {
   final String id;
   String title;
   String content;
@@ -84,6 +89,45 @@ class Note extends ChangeNotifier {
     'modifiedAt': (modifiedAt ?? DateTime.now()).millisecondsSinceEpoch,
   };
 
+  void ldb() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final Future<Database> database = openDatabase(
+
+      join(await getDatabasesPath(), 'notes_database.db'),
+
+      onCreate: (db, version) {
+        return db.execute(
+          "CREATE TABLE notes(id INTEGER PRIMARY KEY, title TEXT, content TEXT)",
+        );
+      },
+
+      version: 1,
+    );
+    //}
+
+    Map<String, dynamic> toMap() {
+      return {
+        'id': id,
+        'title': title,
+        'content': content,
+      };
+    }
+
+    Future<void> insertNotes(Note note) async {
+
+      final Database db = await database;
+
+      await db.insert(
+        'notes',
+        note.toJson(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+
+    await insertNotes(Note());
+  }
+
+
 
   Note copy({bool updateTimestamp = false}) => Note(
     id: id,
@@ -101,6 +145,7 @@ class Note extends ChangeNotifier {
   @override
   int get hashCode => id?.hashCode ?? super.hashCode;
 }
+
 
 
 enum NoteState {
